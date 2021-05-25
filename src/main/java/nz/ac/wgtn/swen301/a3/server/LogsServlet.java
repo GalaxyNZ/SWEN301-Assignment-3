@@ -14,15 +14,15 @@ public class LogsServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        super.doGet(req, resp);
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        super.doPost(req, resp);
     }
 
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        super.doDelete(req, resp);
     }
 
 }

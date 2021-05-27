@@ -7,7 +7,7 @@ import com.fasterxml.jackson.*;
 
 public class Persistency {
 
-    private List<String> DB = new ArrayList<>();
+    public static List<String> DB = new ArrayList<>();
 
     public Persistency() {}
 

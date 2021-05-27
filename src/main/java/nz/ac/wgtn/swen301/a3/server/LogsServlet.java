@@ -3,17 +3,18 @@ package nz.ac.wgtn.swen301.a3.server;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LogsServlet extends HttpServlet {
 
@@ -74,13 +75,66 @@ public class LogsServlet extends HttpServlet {
         out.print(om.writerWithDefaultPrettyPrinter().writeValueAsString(nodeArray));
         out.close();
 
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        StringBuffer string = new StringBuffer();
+        String line;
+
+        try {
+            BufferedReader reader = req.getReader();
+            System.out.println(reader.lines());
+            while ((line = reader.readLine()) != null) {
+                string.append(line);
+            }
+        } catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+
+        ObjectMapper objMap = new ObjectMapper();
+        ObjectNode objNode = objMap.createObjectNode();
+
+        objNode.put("id", "");
+        objNode.put("message", "");
+        objNode.put("timestamp", Long.toString(System.currentTimeMillis()));
+        objNode.put("thread", "");
+        objNode.put("logger", "");
+        objNode.put("level", "");
+        objNode.put("errorDetails", "");
+
+        String format = "";
+
+        try {
+            format = objMap.writerWithDefaultPrettyPrinter().writeValueAsString(objNode);
+        }
+        catch (Exception ignored) {}
+
+        Persistency.DB.add(objNode);
+
+        /*
+        {
+          "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+          "message": "application started",
+          "timestamp": "04-05-2021 10:12:00",
+          "thread": "main",
+          "logger": "com.example.Foo",
+          "level": "DEBUG",
+          "errorDetails": "string"
+        }
+       */
+
         super.doPost(req, resp);
     }
 
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+        Persistency.DB.clear();
+
+        resp.setContentType("application/json");
+
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

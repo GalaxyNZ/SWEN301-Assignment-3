@@ -56,6 +56,7 @@ public class LogsServlet extends HttpServlet {
                         d2.get("timestamp").asText()).compareTo(
                         date.parse(d1.get("timestamp").asText()));
             } catch (Exception e) {
+                e.printStackTrace();
                 return 0;
             }
         });
@@ -69,13 +70,10 @@ public class LogsServlet extends HttpServlet {
         }
 
 
-        /*PrintWriter out = resp.getWriter();
-        String names = Arrays.stream(nodes.toArray())
-                .filter(name -> name.startsWith(n))
-                .collect(Collectors.joining(" "));
-        out.println(names);
+        PrintWriter out = resp.getWriter();
+        out.print(om.writerWithDefaultPrettyPrinter().writeValueAsString(nodeArray));
         out.close();
-        */
+
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

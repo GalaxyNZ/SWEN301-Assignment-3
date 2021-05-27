@@ -24,5 +24,4 @@ public class LogsServlet extends HttpServlet {
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         super.doDelete(req, resp);
     }
-
 }

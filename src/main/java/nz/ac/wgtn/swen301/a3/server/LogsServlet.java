@@ -1,6 +1,8 @@
 package nz.ac.wgtn.swen301.a3.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -58,9 +60,14 @@ public class LogsServlet extends HttpServlet {
             }
         });
 
-        while (nodes.size() > limit) {
-            nodes.remove(nodes.size() - 1);
+        ObjectMapper om = new ObjectMapper();
+
+        ArrayNode nodeArray = om.createArrayNode();
+
+        for (int i = 0; i < limit && i < nodes.size(); i++) {
+            nodeArray.add(nodes.get(i));
         }
+
 
         /*PrintWriter out = resp.getWriter();
         String names = Arrays.stream(nodes.toArray())

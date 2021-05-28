@@ -1,5 +1,7 @@
 package nz.ac.wgtn.swen301.a3.server;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -78,6 +80,7 @@ public class LogsServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         StringBuffer string = new StringBuffer();
@@ -96,22 +99,28 @@ public class LogsServlet extends HttpServlet {
 
 
         ObjectMapper objMap = new ObjectMapper();
-        ObjectNode objNode = objMap.createObjectNode();
+        ObjectNode objNode = objMap.readValue(string.toString(), ObjectNode.class);
 
-        objNode.put("id", "");
-        objNode.put("message", "");
-        objNode.put("timestamp", Long.toString(System.currentTimeMillis()));
-        objNode.put("thread", "");
-        objNode.put("logger", "");
-        objNode.put("level", "");
-        objNode.put("errorDetails", "");
-
-        String format = "";
-
-        try {
-            format = objMap.writerWithDefaultPrettyPrinter().writeValueAsString(objNode);
+        // Check objNode is not null
+        if (objNode.get("id") == null ||
+                objNode.get("message") == null ||
+                objNode.get("timestamp") == null ||
+                objNode.get("thread") == null ||
+                objNode.get("logger") == null ||
+                objNode.get("level") == null ||
+                objNode.get("errorDetails") == null
+        ){
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
-        catch (Exception ignored) {}
+
+        // Check node isn't already in Persistency database or doesn't share an ID
+        for (JsonNode node : Persistency.DB) {
+            if (objNode.get("id") == node.get("id")) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+        }
 
         Persistency.DB.add(objNode);
 
@@ -126,10 +135,9 @@ public class LogsServlet extends HttpServlet {
           "errorDetails": "string"
         }
        */
-
-        super.doPost(req, resp);
     }
 
+    @Override
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Persistency.DB.clear();
 

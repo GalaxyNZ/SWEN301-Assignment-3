@@ -27,6 +27,8 @@ public class TestStatsCSV {
         StatsCSVServlet servlet = new StatsCSVServlet();
         servlet.doGet(request, response);
         assertEquals("text/csv", response.getContentType());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -36,6 +38,8 @@ public class TestStatsCSV {
         StatsCSVServlet servlet = new StatsCSVServlet();
         servlet.doGet(request, response);
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -47,7 +51,7 @@ public class TestStatsCSV {
                 df.format(new Date()) + "",
                 Thread.currentThread().toString() + "",
                 "logger",
-                "debug",
+                "DEBUG",
                 "details"
         ));
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -59,9 +63,11 @@ public class TestStatsCSV {
         String result = response.getContentAsString();
 
         Map<String, Map<String, Integer>> table = getTable(result, 2);
-        assertEquals(table.get("logger").get("debug"), 1);
+        assertEquals(1, table.get("logger").get("DEBUG"));
 
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -113,15 +119,13 @@ public class TestStatsCSV {
         String result = response.getContentAsString();
 
         Map<String, Map<String, Integer>> table = getTable(result, 3);
-        Map<String, HashSet<String>> levels = Map.ofEntries(
-                entry("logger1", new HashSet<>(Arrays.asList("DEBUG", "TRACE"))),
-                entry("logger2", new HashSet<>(Collections.singletonList("FATAL")))
-        );
 
-        assertEquals(table.get("logger1").get("DEBUG"), 1);
-        assertEquals(table.get("logger1").get("TRACE"), 2);
-        assertEquals(table.get("logger2").get("FATAL"), 1);
+        assertEquals(1, table.get("logger1").get("DEBUG"));
+        assertEquals(2, table.get("logger1").get("TRACE"));
+        assertEquals(1, table.get("logger2").get("FATAL"));
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -138,6 +142,8 @@ public class TestStatsCSV {
 
         getTable(result, 1);
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     private Map<String, Map<String, Integer>> getTable(String result, int numRows) {

@@ -18,12 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestPostLogs {
 
     @Test
-    public void test() throws ServletException, IOException {
-
-        Persistency.DB.clear();
-    }
-
-    @Test
     public void testValidPost() throws ServletException, IOException {
         MockHttpServletRequest request;
         MockHttpServletResponse response;
@@ -154,7 +148,7 @@ public class TestPostLogs {
         objNode.put("timestamp", timestamp);
         objNode.put("thread", thread);
         objNode.put("logger", logger);
-        objNode.put("level", level);
+        objNode.put("level", level.toUpperCase());
         objNode.put("errorDetails", errorDetails);
 
         return objNode;

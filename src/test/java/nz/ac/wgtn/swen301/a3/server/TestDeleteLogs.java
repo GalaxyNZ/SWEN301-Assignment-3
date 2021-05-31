@@ -14,28 +14,25 @@ public class TestDeleteLogs {
 
     @Test
     public void test_01() throws ServletException, IOException {
-        MockHttpServletRequest request;
-        MockHttpServletResponse response;
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-        for (int i = 0; i < 10; i++) {
-            request = new MockHttpServletRequest();
-            request.setParameter("LogEvent", createRandomNode().toPrettyString());
-            response = new MockHttpServletResponse();
+        request.setParameter("LogEvent", createRandomNode().toPrettyString());
 
-            LogsServlet service = new LogsServlet();
-            service.doPost(request, response);
-
-            assertEquals(201, response.getStatus());
-        }
+        LogsServlet service = new LogsServlet();
+        service.doPost(request, response);
+        assertEquals(201, response.getStatus());
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
 
-        LogsServlet service = new LogsServlet();
-        service.doDelete(request,response);
+        service = new LogsServlet();
+        service.doDelete(request, response);
 
-        assertEquals(200,response.getStatus());
+        assertEquals(200, response.getStatus());
         assertEquals(Persistency.DB.size(), 0);
+
+        Persistency.DB.clear();
     }
 
 

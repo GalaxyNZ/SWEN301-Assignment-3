@@ -21,7 +21,7 @@ import java.util.*;
 
 public class LogsServlet extends HttpServlet {
 
-    public static Map<String, Integer> priority = new HashMap<>(Map.of("off", 1, "fatal", 2, "error", 3, "warn", 4, "info", 5, "debug", 6, "trace", 7, "all", 8));
+    public static Map<String, Integer> priority = new HashMap<>(Map.of("OFF", 1, "FATAL", 2, "ERROR", 3, "WARN", 4, "INFO", 5, "DEBUG", 6, "TRACE", 7, "ALL", 8));
 
     public LogsServlet() {
 
@@ -51,7 +51,7 @@ public class LogsServlet extends HttpServlet {
         ArrayList<JsonNode> nodes = new ArrayList<>();
 
         for (JsonNode j : Persistency.DB) {
-            if (priority.get(j.get("level").textValue().toLowerCase())
+            if (priority.get(j.get("level").textValue().toUpperCase())
                     <= priority.get(level)) {
                 nodes.add(j);
             }

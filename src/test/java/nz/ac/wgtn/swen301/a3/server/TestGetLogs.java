@@ -29,6 +29,8 @@ public class TestGetLogs {
         service.doGet(request, response);
 
         assertEquals(400, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -43,6 +45,8 @@ public class TestGetLogs {
         service.doGet(request, response);
 
         assertEquals(400, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -57,6 +61,8 @@ public class TestGetLogs {
         service.doGet(request, response);
 
         assertEquals(200, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -74,6 +80,8 @@ public class TestGetLogs {
 
             assertEquals(200, response.getStatus());
         }
+
+        Persistency.DB.clear();
     }
 
     @Test
@@ -89,13 +97,15 @@ public class TestGetLogs {
 
             assertEquals(200, response.getStatus());
         }
+
+        Persistency.DB.clear();
     }
 
     @Test
     public void testValidContentType() throws IOException, ServletException {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("level", "off");
+        request.setParameter("level", "DEBUG");
         request.setParameter("limit", "10");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -103,6 +113,8 @@ public class TestGetLogs {
         service.doGet(request, response);
 
         assertEquals(response.getContentType(), "application/json");
+
+        Persistency.DB.clear();
     }
 
 
@@ -110,7 +122,7 @@ public class TestGetLogs {
     public void testLimitWithoutNumber() throws IOException, ServletException {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("level", "off");
+        request.setParameter("level", "TRACE");
         request.setParameter("limit", "meow");
         MockHttpServletResponse response = new MockHttpServletResponse();
         // wrong query parameter
@@ -119,6 +131,8 @@ public class TestGetLogs {
         service.doGet(request, response);
 
         assertEquals(400, response.getStatus());
+
+        Persistency.DB.clear();
     }
 
 
@@ -140,7 +154,7 @@ public class TestGetLogs {
 
         request = new MockHttpServletRequest();
         request.addParameter("limit", "10");
-        request.addParameter("level", "debug");
+        request.addParameter("level", "DEBUG");
         response = new MockHttpServletResponse();
 
         LogsServlet service = new LogsServlet();
@@ -148,11 +162,13 @@ public class TestGetLogs {
 
         String result = response.getContentAsString();
 
-        assertTrue(result.contains("\"debug\""));
-        assertTrue(result.contains("\"info\""));
-        assertTrue(result.contains("\"warn\""));
-        assertTrue(result.contains("\"error\""));
-        assertTrue(result.contains("\"fatal\""));
-        assertTrue(result.contains("\"off\""));
+        assertTrue(result.contains("\"DEBUG\""));
+        assertTrue(result.contains("\"INFO\""));
+        assertTrue(result.contains("\"WARN\""));
+        assertTrue(result.contains("\"ERROR\""));
+        assertTrue(result.contains("\"FATAL\""));
+        assertTrue(result.contains("\"OFF\""));
+
+        Persistency.DB.clear();
     }
 }

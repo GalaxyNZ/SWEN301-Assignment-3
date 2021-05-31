@@ -16,12 +16,9 @@ import java.util.Map;
 
 public class StatsCSVServlet extends HttpServlet {
 
-
     public static ArrayList<String> errorStates = new ArrayList<>(List.of("ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "OFF"));
 
     public StatsCSVServlet() {}
-
-
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -41,26 +38,9 @@ public class StatsCSVServlet extends HttpServlet {
             csv.append("\n");
         }
 
-        /*try {
-            FileWriter myWriter = new FileWriter("filename.txt");
-            myWriter.write(csv.toString());
-            myWriter.close();
-        } catch (IOException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            e.printStackTrace();
-        }*/
-
         out.print(csv.toString());
 
         resp.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
-    }
-
-    public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
     }
 
     public static Map<String, HashMap<String, Integer>> createMap() {

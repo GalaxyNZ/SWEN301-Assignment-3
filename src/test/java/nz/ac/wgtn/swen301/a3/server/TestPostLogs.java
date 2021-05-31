@@ -8,9 +8,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -80,12 +79,27 @@ public class TestPostLogs {
     }
 
     @Test
+    public void testDuplicate() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        request.setParameter("LogEvent", createRandomNode().toPrettyString());
+
+        LogsServlet service = new LogsServlet();
+        service.doPost(request, response);
+        service.doPost(request, response);
+
+        assertEquals(400, response.getStatus());
+
+        Persistency.DB.clear();
+    }
+
+    @Test
     public void testAddingLevels() throws ServletException, IOException {
         MockHttpServletRequest request;
         MockHttpServletResponse response;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 8; i++) {
             request = new MockHttpServletRequest();
-            request.setParameter("LogEvent", createRandomNode().toPrettyString());
+            request.setParameter("LogEvent", createRandomNode(i).toPrettyString());
             response = new MockHttpServletResponse();
 
             LogsServlet service = new LogsServlet();
@@ -93,7 +107,7 @@ public class TestPostLogs {
 
             assertEquals(201, response.getStatus());
         }
-        assertEquals(10, Persistency.DB.size());
+        assertEquals(7, Persistency.DB.size());
         Persistency.DB.clear();
     }
 
@@ -101,12 +115,31 @@ public class TestPostLogs {
         ObjectMapper objMap = new ObjectMapper();
         ObjectNode objNode = objMap.createObjectNode();
 
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
         objNode.put("id", UUID.randomUUID().toString());
         objNode.put("message", "error message test");
-        objNode.put("timestamp", System.currentTimeMillis() + "");
+        objNode.put("timestamp", df.format(new Date()) + "");
         objNode.put("thread", Thread.currentThread().toString() + "");
         objNode.put("logger", "logger example");
-        objNode.put("level", LogsServlet.priority.containsValue((int) (Math.random() * 8)) + "");
+        objNode.put("level", getKey(LogsServlet.priority, (int) (Math.random() * 8)));
+        objNode.put("errorDetails", "details example");
+
+        return objNode;
+    }
+
+    public static ObjectNode createRandomNode(int level) {
+        ObjectMapper objMap = new ObjectMapper();
+        ObjectNode objNode = objMap.createObjectNode();
+
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+        objNode.put("id", UUID.randomUUID().toString());
+        objNode.put("message", "error message test");
+        objNode.put("timestamp", df.format(new Date()) + "");
+        objNode.put("thread", Thread.currentThread().toString() + "");
+        objNode.put("logger", "logger example");
+        objNode.put("level", getKey(LogsServlet.priority, level));
         objNode.put("errorDetails", "details example");
 
         return objNode;
@@ -125,6 +158,16 @@ public class TestPostLogs {
         objNode.put("errorDetails", errorDetails);
 
         return objNode;
+    }
+
+
+    public static <K, V> K getKey(Map<K, V> map, V value) {
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (entry.getValue().equals(value)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
         /*

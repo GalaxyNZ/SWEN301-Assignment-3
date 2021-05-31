@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -50,7 +51,8 @@ public class LogsServlet extends HttpServlet {
         ArrayList<JsonNode> nodes = new ArrayList<>();
 
         for (JsonNode j : Persistency.DB) {
-            if (priority.get(j.get("level").toString().toLowerCase()) <= priority.get(level)) {
+            if (priority.get(j.get("level").textValue().toLowerCase())
+                    <= priority.get(level)) {
                 nodes.add(j);
             }
         }
@@ -59,10 +61,9 @@ public class LogsServlet extends HttpServlet {
         nodes.sort((d1, d2) -> {
             try {
                 return date.parse(
-                        d2.get("timestamp").asText()).compareTo(
+                        d2.get("timestamp").textValue()).compareTo(
                         date.parse(d1.get("timestamp").asText()));
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ParseException e) {
                 return 0;
             }
         });
@@ -87,25 +88,6 @@ public class LogsServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
 
-
-
-        /*StringBuffer string = new StringBuffer();
-        String line;
-
-        System.out.println(req.getParameter("LogEvent"));
-
-        try {
-            BufferedReader reader = req.getReader();
-            System.out.println(reader.lines());
-            while ((line = reader.readLine()) != null) {
-                string.append(line);
-            }
-        } catch (Exception e) {
-            System.out.println("exception when running BufferedReader");
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }*/
-
         ObjectMapper objMap = new ObjectMapper();
         ObjectNode objNode;
         // Hints stated not to use getParameter. I assumed this meant not to do getParameter for each of the options but instead to send the whole piece of data.
@@ -127,7 +109,7 @@ public class LogsServlet extends HttpServlet {
                     objNode.get("logger").textValue().equals("") ||
                     objNode.get("level").textValue().equals("")
             ) {
-                System.out.println("node field is empty");
+                System.out.println("node field is empty" + objNode.toPrettyString());
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }

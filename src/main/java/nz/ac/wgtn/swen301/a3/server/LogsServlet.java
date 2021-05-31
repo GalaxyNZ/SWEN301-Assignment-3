@@ -20,7 +20,7 @@ import java.util.*;
 
 public class LogsServlet extends HttpServlet {
 
-    Map<String, Integer> priority = new HashMap<>(Map.of("off", 1, "fatal", 2, "error", 3, "warn", 4, "info", 5, "debug", 6, "trace", 7, "all", 8));
+    public static Map<String, Integer> priority = new HashMap<>(Map.of("off", 1, "fatal", 2, "error", 3, "warn", 4, "info", 5, "debug", 6, "trace", 7, "all", 8));
 
     public LogsServlet() {
 
@@ -31,6 +31,7 @@ public class LogsServlet extends HttpServlet {
 
         String level = req.getParameter("level");
         if (level == null) {
+            System.out.println("level null");
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -38,6 +39,8 @@ public class LogsServlet extends HttpServlet {
         try {
             limit = Integer.parseInt(req.getParameter("limit"));
         } catch (NumberFormatException e) {
+
+            System.out.println("limit not parsed");
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -108,7 +111,8 @@ public class LogsServlet extends HttpServlet {
                 objNode.get("thread") == null ||
                 objNode.get("logger") == null ||
                 objNode.get("level") == null ||
-                objNode.get("errorDetails") == null
+                objNode.get("errorDetails") == null ||
+                objNode == null
         ){
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
@@ -116,7 +120,7 @@ public class LogsServlet extends HttpServlet {
 
         // Check node isn't already in Persistency database or doesn't share an ID
         for (JsonNode node : Persistency.DB) {
-            if (objNode.get("id") == node.get("id")) {
+            if (objNode.get("id").textValue() == node.get("id").textValue()) {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }

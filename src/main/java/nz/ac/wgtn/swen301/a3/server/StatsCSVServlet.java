@@ -3,6 +3,7 @@ package nz.ac.wgtn.swen301.a3.server;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,11 +16,54 @@ import java.util.Map;
 
 public class StatsCSVServlet extends HttpServlet {
 
+
+    public static ArrayList<String> errorStates = new ArrayList<>(List.of("ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "OFF"));
+
     public StatsCSVServlet() {}
+
 
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/csv");
+
+        ServletOutputStream out =resp.getOutputStream();
+
+        Map <String, HashMap<String, Integer>> fileBuilder = createMap();
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("logger\tALL\tTRACE\tDEBUG\tINFO\tWARN\tERROR\tFATAL\tOFF\n");
+        for (String logger : fileBuilder.keySet()) {
+            csv.append(logger);
+            for (String error : errorStates) {
+                csv.append("\t").append(fileBuilder.get(logger).getOrDefault(error, 0));
+            }
+            csv.append("\n");
+        }
+
+        /*try {
+            FileWriter myWriter = new FileWriter("filename.txt");
+            myWriter.write(csv.toString());
+            myWriter.close();
+        } catch (IOException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            e.printStackTrace();
+        }*/
+
+        out.print(csv.toString());
+
+        resp.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doPost(req, resp);
+    }
+
+    public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doDelete(req, resp);
+    }
+
+    public static Map<String, HashMap<String, Integer>> createMap() {
         Map <String, HashMap<String, Integer>> fileBuilder = new HashMap<>();
         for (JsonNode node : Persistency.DB) {
             if (fileBuilder.containsKey(node.get("logger").textValue())) {
@@ -35,35 +79,6 @@ public class StatsCSVServlet extends HttpServlet {
             fileBuilder.get(node.get("logger").textValue()).put(node.get("level").textValue(), 1);
         }
 
-        ArrayList<String> errorStates = new ArrayList<>(List.of("ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "OFF"));
-
-        StringBuilder csv = new StringBuilder();
-        csv.append("logger, ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF\n");
-        for (String logger : fileBuilder.keySet()) {
-            csv.append(logger);
-            for (String error : errorStates) {
-                csv.append(", ").append(fileBuilder.get(logger).getOrDefault(error, 0));
-            }
-            csv.append("\n");
-        }
-
-        try {
-            FileWriter myWriter = new FileWriter("filename.txt");
-            myWriter.write(csv.toString());
-            myWriter.close();
-        } catch (IOException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            e.printStackTrace();
-        }
-
-        resp.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
-    }
-
-    public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+        return fileBuilder;
     }
 }

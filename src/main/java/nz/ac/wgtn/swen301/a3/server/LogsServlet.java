@@ -86,8 +86,13 @@ public class LogsServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
-        StringBuffer string = new StringBuffer();
+
+
+
+        /*StringBuffer string = new StringBuffer();
         String line;
+
+        System.out.println(req.getParameter("LogEvent"));
 
         try {
             BufferedReader reader = req.getReader();
@@ -96,37 +101,53 @@ public class LogsServlet extends HttpServlet {
                 string.append(line);
             }
         } catch (Exception e) {
+            System.out.println("exception when running BufferedReader");
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }*/
+
+        ObjectMapper objMap = new ObjectMapper();
+        ObjectNode objNode;
+        // Hints stated not to use getParameter. I assumed this meant not to do getParameter for each of the options but instead to send the whole piece of data.
+        try {
+            objNode = objMap.readValue(req.getParameter("LogEvent"), ObjectNode.class);
+        } catch (IllegalArgumentException e) {
+            System.out.println("no LogEvent parameter");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-
-        ObjectMapper objMap = new ObjectMapper();
-        ObjectNode objNode = objMap.readValue(string.toString(), ObjectNode.class);
-
-        // Check objNode is not null
-        if (objNode.get("id") == null ||
-                objNode.get("message") == null ||
-                objNode.get("timestamp") == null ||
-                objNode.get("thread") == null ||
-                objNode.get("logger") == null ||
-                objNode.get("level") == null ||
-                objNode.get("errorDetails") == null ||
-                objNode == null
-        ){
+        try {
+            objNode.get("errorDetails");
+            // Check objNode is not null
+            if (objNode.get("id").textValue().equals("") ||
+                    objNode.get("message").textValue().equals("") ||
+                    objNode.get("timestamp").textValue().equals("") ||
+                    objNode.get("thread").textValue().equals("") ||
+                    objNode.get("logger").textValue().equals("") ||
+                    objNode.get("level").textValue().equals("")
+            ) {
+                System.out.println("node field is empty");
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+        } catch (NullPointerException e) {
+            System.out.println("node field is null");
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         // Check node isn't already in Persistency database or doesn't share an ID
         for (JsonNode node : Persistency.DB) {
-            if (objNode.get("id").textValue() == node.get("id").textValue()) {
+            if (objNode.get("id").textValue().equals(node.get("id").textValue())) {
+                System.out.println("Node already in database");
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
         }
 
         Persistency.DB.add(objNode);
+        resp.setStatus(HttpServletResponse.SC_CREATED);
 
         /*
         {

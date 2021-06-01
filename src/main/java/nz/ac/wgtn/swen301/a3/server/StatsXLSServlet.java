@@ -1,5 +1,10 @@
 package nz.ac.wgtn.swen301.a3.server;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -23,17 +28,46 @@ public class StatsXLSServlet extends HttpServlet {
         Map<String, HashMap<String, Integer>> fileBuilder = createMap();
 
 
-        StringBuilder xls = new StringBuilder();
-        xls.append("logger\tALL\tTRACE\tDEBUG\tINFO\tWARN\tERROR\tFATAL\tOFF\n");
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("log stats");
+
+
+        int rowCount = 0, colCount = 0;
+        Row row = sheet.createRow(rowCount++);
+        Cell cell = row.createCell(colCount++);
+        cell.setCellValue("logger");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("ALL");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("TRACE");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("DEBUG");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("INFO");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("WARN");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("ERROR");
+        cell = row.createCell(colCount++);
+        cell.setCellValue("FATAL");
+        cell = row.createCell(colCount);
+        cell.setCellValue("OFF");
+
         for (String logger : fileBuilder.keySet()) {
-            xls.append(logger);
+            colCount = 0;
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(colCount);
+            cell.setCellValue(logger);
             for (String error : errorStates) {
-                xls.append("\t").append(fileBuilder.get(logger).getOrDefault(error, 0));
+                cell = row.createCell(colCount);
+                cell.setCellValue(fileBuilder.get(logger).getOrDefault(error, 0));
             }
-            xls.append("\n");
         }
 
-        out.print(xls.toString());
 
+        workbook.write(out);
+        workbook.close();
+        out.close();
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 }

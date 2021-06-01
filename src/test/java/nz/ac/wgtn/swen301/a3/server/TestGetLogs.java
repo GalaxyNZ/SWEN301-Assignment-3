@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestGetLogs {
 
-
     @Test
     public void testInvalidRequestResponseCode1() throws IOException, ServletException {
 
